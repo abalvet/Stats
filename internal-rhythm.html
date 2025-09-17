@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .applet-container {
+            width: 800px;
+            height: 600px;
+            background-color: white;
+            border: 2px solid #333;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transition: background-color 0.5s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .title {
+            position: absolute;
+            top: 40px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+
+        .instructions {
+            position: absolute;
+            top: 100px;
+            left: 50px;
+            right: 50px;
+            font-size: 16px;
+            color: #666;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .start-button {
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .start-button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+
+        .start-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .start-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-text {
+            position: absolute;
+            bottom: 100px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+
+        .footer-text {
+            position: absolute;
+            bottom: 40px;
+            font-size: 14px;
+            color: #888;
+            text-align: center;
+        }
+
+        /* Classes pour les différents états */
+        .state-waiting {
+            background-color: white;
+        }
+
+        .state-counting {
+            background-color: #90EE90;
+        }
+
+        .state-finished {
+            background-color: #FFB6C1;
+        }
+    </style>
+</head>
+<body>
+    <div class="applet-container state-waiting" id="appletContainer">
+        <div class="title">Chacun son compte</div>
+        
+        <div class="instructions" id="instructions">
+            <strong>Instructions :</strong><br>
+            Cliquer sur DEMARRER et compter mentalement de 1 en 1.<br>
+            Noter le chiffre obtenu.<br>
+            <!--<em>Durée : 30 secondes</em>-->
+        </div>
+
+        <button class="start-button" id="startButton" onclick="startCounting()">
+            DEMARRER
+        </button>
+
+        <div class="status-text" id="statusText">
+            Prêt à commencer
+        </div>
+
+        <div class="footer-text">
+            Statistiques - Chacun son compte
+        </div>
+    </div>
+
+    <script>
+        let isRunning = false;
+        let timer = null;
+
+        function startCounting() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            const container = document.getElementById('appletContainer');
+            const button = document.getElementById('startButton');
+            const statusText = document.getElementById('statusText');
+            const instructions = document.getElementById('instructions');
+
+            // Désactiver le bouton et changer l'interface
+            button.disabled = true;
+            button.textContent = 'EN COURS...';
+            
+            // Changer le fond en vert et mettre à jour le statut
+            container.className = 'applet-container state-counting';
+            statusText.textContent = 'Compter mentalement... 1, 2, 3, 4...';
+            instructions.innerHTML = '<strong>Partez !</strong><br>Compter de 1 en 1 dans votre tête.<br>Le fond deviendra rouge à la fin.';
+
+            // Démarrer le timer de 30 secondes
+            timer = setTimeout(() => {
+                finishCounting();
+            }, 15000); // 15 secondes
+        }
+
+        function finishCounting() {
+            const container = document.getElementById('appletContainer');
+            const button = document.getElementById('startButton');
+            const statusText = document.getElementById('statusText');
+            const instructions = document.getElementById('instructions');
+
+            // Changer le fond en rouge
+            container.className = 'applet-container state-finished';
+            
+            // Mettre à jour l'interface
+            statusText.textContent = 'STOP ! Noter le résultat';
+            instructions.innerHTML = '<strong>Délai écoulé</strong><br>Noter le dernier chiffre obtenu.<br>Ces données serviront pour les exercices suivants.';
+            
+            // Réactiver le bouton pour permettre de recommencer
+            button.disabled = false;
+            button.textContent = 'RECOMMENCER';
+            button.onclick = resetExercise;
+            
+            isRunning = false;
+        }
+
+        function resetExercise() {
+            const container = document.getElementById('appletContainer');
+            const button = document.getElementById('startButton');
+            const statusText = document.getElementById('statusText');
+            const instructions = document.getElementById('instructions');
+
+            // Réinitialiser l'état
+            container.className = 'applet-container state-waiting';
+            button.textContent = 'DEMARRER';
+            button.onclick = startCounting;
+            statusText.textContent = 'Prêt à commencer';
+            instructions.innerHTML = '<strong>Instructions :</strong><br>Cliquer sur DEMARRER et compter mentalement de 1 en 1 jusqu\'à la fin de l\'activité.<br>Noter le chiffre obtenu.<br><em>Durée : 30 secondes</em>';
+
+            // Nettoyer le timer si nécessaire
+            if (timer) {
+                clearTimeout(timer);
+                timer = null;
+            }
+            
+            isRunning = false;
+        }
+
+        // Gestion du rechargement de page pour éviter les accidents
+        window.addEventListener('beforeunload', function(e) {
+            if (isRunning) {
+                e.preventDefault();
+                e.returnValue = '';
+                return 'Une activité est en cours. Êtes-vous sûr de vouloir quitter ?';
+            }
+        });
+    </script>
+</body>
+</html>
